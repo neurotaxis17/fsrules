@@ -190,10 +190,6 @@
 
   /* NAV / FILTERS */
   .toolbar{
-    position:sticky; top:0; z-index:20;
-    backdrop-filter:blur(10px);
-    background:rgba(33,29,56,.85);
-    border-bottom:1px solid var(--line);
     padding:14px 20px;
     margin:24px -20px 0;
   }
@@ -218,6 +214,17 @@
   }
   .chip:hover{border-color:var(--yellow); color:var(--yellow);}
   .chip.active{background:var(--yellow); color:#241a02; border-color:var(--yellow);}
+
+  @media (max-width:640px){
+    .toolbar{padding:12px 8px;}
+    .toolbar-inner{flex-wrap:nowrap; gap:6px; overflow-x:auto; scrollbar-width:none;}
+    .toolbar-inner::-webkit-scrollbar{display:none;}
+    .chip{padding:7px 10px; font-size:12px; flex:0 0 auto;}
+  }
+  @media (max-width:360px){
+    .toolbar-inner{gap:4px;}
+    .chip{padding:6px 8px; font-size:11.5px;}
+  }
 
   main{max-width:920px; margin:0 auto; padding:20px 20px 20px;}
   section.block{margin-bottom:42px;}
@@ -517,8 +524,6 @@
   /* ===== lighter rendering path for Gecko engine (Firefox/Waterfox/Tor/LibreWolf) ===== */
   .gecko .topnav{ backdrop-filter:none; background:rgba(20,18,31,.97); }
   html[data-theme="light"].gecko .topnav{ background:rgba(246,243,255,.97); }
-  .gecko .toolbar{ backdrop-filter:none; background:rgba(33,29,56,.92); }
-  html[data-theme="light"].gecko .toolbar{ background:rgba(255,255,255,.92); }
   .gecko .blob{ filter:blur(28px); opacity:.22; }
   .gecko #particles-bg{ opacity:.3; }
 
@@ -526,12 +531,97 @@
   .confetti-piece{
     position:fixed; top:0; left:0; width:8px; height:12px; z-index:200; pointer-events:none;
   }
+
+  /* ===== immersive extras ===== */
+  .scroll-progress{
+    position:fixed; top:0; left:0; width:100%; height:3px; z-index:60;
+    background:linear-gradient(90deg,var(--pink),var(--yellow),var(--green));
+    transform:scaleX(0); transform-origin:0 50%; pointer-events:none;
+  }
+  .cursor-glow{
+    position:fixed; left:0; top:0; width:400px; height:400px; border-radius:50%;
+    pointer-events:none; z-index:-1; opacity:0; transition:opacity .4s ease; will-change:transform;
+    background:radial-gradient(circle, rgba(255,59,141,.16), rgba(255,210,63,.05) 45%, transparent 70%);
+  }
+  .hero .tag{animation:tagFloat 4.5s ease-in-out infinite;}
+  @keyframes tagFloat{
+    0%,100%{transform:rotate(-3deg) translateY(0);}
+    50%{transform:rotate(-1.5deg) translateY(-5px);}
+  }
+  .hero h1 .w{display:inline-block; white-space:nowrap;}
+  .hero h1 .l{
+    display:inline-block; opacity:0; transform:translateY(.55em) rotate(7deg);
+    animation:letterIn .75s cubic-bezier(.2,.9,.3,1.35) forwards;
+    animation-delay:calc(var(--i) * 45ms + .25s);
+  }
+  .hero h1 .l.done{animation:none; opacity:1; transform:none; transition:transform .2s ease; cursor:default;}
+  .hero h1 .l.done:hover{transform:translateY(-.1em) rotate(-4deg);}
+  @keyframes letterIn{ to{opacity:1; transform:none;} }
+
+  section.block h2::after{
+    content:""; display:block; height:3px; width:0; margin-top:8px; border-radius:3px;
+    background:linear-gradient(90deg,var(--pink),var(--yellow));
+    transition:width .8s ease .25s;
+  }
+  section.block.in-view h2::after{width:64px;}
+
+  .rule,.faq-item,.term,.quiz-card,.warnmeter-wrap{position:relative;}
+  .rule::before,.faq-item::before,.term::before,.quiz-card::before,.warnmeter-wrap::before{
+    content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0;
+    transition:opacity .25s ease;
+    background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%), rgba(255,59,141,.12), transparent 70%);
+  }
+  @media (hover:hover){
+    .rule:hover::before,.faq-item:hover::before,.term:hover::before,
+    .quiz-card:hover::before,.warnmeter-wrap:hover::before{opacity:1;}
+  }
+
+  .rule.enter{
+    animation:ruleIn .45s cubic-bezier(.22,.7,.3,1) both;
+    animation-delay:calc(var(--i) * 35ms);
+  }
+  @keyframes ruleIn{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
+
+  .btn,.chip{position:relative; overflow:hidden;}
+  .ripple{
+    position:absolute; border-radius:50%; pointer-events:none;
+    background:rgba(255,255,255,.35); transform:scale(0); opacity:.9;
+    animation:rippleOut .6s ease-out forwards;
+  }
+  @keyframes rippleOut{ to{transform:scale(1); opacity:0;} }
+
+  .slot.pop{animation:slotPop .35s cubic-bezier(.3,1.6,.5,1);}
+  @keyframes slotPop{ 0%{transform:scale(.85);} 60%{transform:scale(1.18);} 100%{transform:scale(1);} }
+  .warnmeter-wrap.maxed{animation:meterShake .5s ease; border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,59,141,.25), 0 0 32px rgba(255,59,141,.3);}
+  @keyframes meterShake{
+    0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 40%{transform:translateX(6px);}
+    60%{transform:translateX(-4px);} 80%{transform:translateX(3px);}
+  }
+
+  .quiz-q,.quiz-options{animation:quizIn .35s ease both;}
+  .quiz-options{animation-delay:.06s;}
+  @keyframes quizIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+  .quiz-opt.correct{animation:optPop .4s ease;}
+  .quiz-opt.wrong{animation:optShake .4s ease;}
+  @keyframes optPop{ 0%{transform:scale(1);} 50%{transform:scale(1.025);} 100%{transform:scale(1);} }
+  @keyframes optShake{
+    0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 50%{transform:translateX(5px);} 75%{transform:translateX(-3px);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .scroll-progress,.cursor-glow{display:none !important;}
+    .hero .tag,.hero h1 .l,.rule.enter,.slot.pop,.warnmeter-wrap.maxed,
+    .quiz-q,.quiz-options,.quiz-opt.correct,.quiz-opt.wrong,.ripple{animation:none !important;}
+    .hero h1 .l{opacity:1 !important; transform:none !important;}
+    section.block h2::after{width:64px; transition:none;}
+  }
 </style>
 <script>(function(){try{if(window.CSS&&CSS.supports&&CSS.supports('-moz-appearance','none')){document.documentElement.classList.add('gecko');}}catch(e){}})();</script>
 </head>
 <body>
 <div class="bg-blobs" aria-hidden="true"><span class="blob blob-a"></span><span class="blob blob-b"></span><span class="blob blob-c"></span></div>
 
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 <div class="fs-spin-badge" aria-hidden="true">FS</div>
 
 <header class="topnav">
@@ -591,7 +681,7 @@
 <div class="toolbar">
   <div class="toolbar-inner" id="filters">
     <button class="chip active" data-filter="all">Все правила</button>
-    <button class="chip" data-filter="warn">Только варн</button>
+    <button class="chip" data-filter="warn">Варн</button>
     <button class="chip" data-filter="mute">Мут</button>
     <button class="chip" data-filter="tban">Тбан</button>
     <button class="chip" data-filter="pban">Пбан</button>
@@ -1213,6 +1303,124 @@ renderQuizQuestion();
   window.addEventListener('scroll', () => {
     if(!ticking){ requestAnimationFrame(update); ticking = true; }
   }, {passive:true});
+})();
+
+// ===== immersive extras =====
+(function(){
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canHover = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+  // scroll progress bar
+  const bar = document.getElementById('scrollProgress');
+  if(bar && !reduced){
+    let t = false;
+    const upd = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(1, Math.max(0, (window.scrollY || 0) / max)) : 0;
+      bar.style.transform = 'scaleX(' + p + ')';
+      t = false;
+    };
+    window.addEventListener('scroll', () => { if(!t){ requestAnimationFrame(upd); t = true; } }, {passive:true});
+    window.addEventListener('resize', upd);
+    upd();
+  }
+
+  // hero title: letter-by-letter entrance + hover bounce
+  const h1 = document.querySelector('.hero h1');
+  if(h1 && !reduced){
+    const text = h1.textContent.trim();
+    h1.setAttribute('aria-label', text);
+    h1.textContent = '';
+    let i = 0;
+    const words = text.split(' ');
+    words.forEach((word, wi) => {
+      const w = document.createElement('span');
+      w.className = 'w';
+      w.setAttribute('aria-hidden', 'true');
+      Array.from(word).forEach(ch => {
+        const l = document.createElement('span');
+        l.className = 'l';
+        l.textContent = ch;
+        l.style.setProperty('--i', i++);
+        l.addEventListener('animationend', () => l.classList.add('done'), {once:true});
+        w.appendChild(l);
+      });
+      h1.appendChild(w);
+      if(wi < words.length - 1) h1.appendChild(document.createTextNode(' '));
+    });
+  }
+
+  // click ripple on buttons and chips
+  document.addEventListener('pointerdown', (e) => {
+    if(reduced) return;
+    const t = e.target.closest && e.target.closest('.btn,.chip');
+    if(!t) return;
+    const r = t.getBoundingClientRect();
+    const d = Math.max(r.width, r.height) * 2;
+    const s = document.createElement('span');
+    s.className = 'ripple';
+    s.style.cssText = 'width:' + d + 'px;height:' + d + 'px;left:' + (e.clientX - r.left - d/2) + 'px;top:' + (e.clientY - r.top - d/2) + 'px';
+    t.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  });
+
+  // cursor-following glow (desktop only)
+  if(canHover && !reduced){
+    const g = document.createElement('div');
+    g.className = 'cursor-glow';
+    document.body.appendChild(g);
+    let tx = window.innerWidth/2, ty = window.innerHeight/2, cx = tx, cy = ty, raf = 0;
+    const loop = () => {
+      cx += (tx - cx) * .12; cy += (ty - cy) * .12;
+      g.style.transform = 'translate3d(' + (cx - 200) + 'px,' + (cy - 200) + 'px,0)';
+      raf = (Math.abs(tx - cx) + Math.abs(ty - cy) > .5) ? requestAnimationFrame(loop) : 0;
+    };
+    window.addEventListener('pointermove', (e) => {
+      tx = e.clientX; ty = e.clientY; g.style.opacity = 1;
+      if(!raf) raf = requestAnimationFrame(loop);
+    }, {passive:true});
+    document.addEventListener('mouseleave', () => { g.style.opacity = 0; });
+  }
+
+  // card spotlight follows the pointer
+  if(canHover && !reduced){
+    document.addEventListener('pointermove', (e) => {
+      const c = e.target.closest && e.target.closest('.rule,.faq-item,.term,.quiz-card,.warnmeter-wrap');
+      if(!c) return;
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    }, {passive:true});
+  }
+
+  // staggered re-appearance of rule cards after filtering
+  const filters = document.getElementById('filters');
+  if(filters && !reduced){
+    filters.addEventListener('click', () => {
+      let n = 0;
+      document.querySelectorAll('#rulesGrid .rule').forEach(card => {
+        if(card.dataset.hidden === 'true') return;
+        card.style.setProperty('--i', n++);
+        card.classList.add('enter');
+      });
+    });
+  }
+
+  // warn meter: pop on toggle, shake at the limit
+  const slots = document.getElementById('slots');
+  const meter = document.querySelector('.warnmeter-wrap');
+  if(slots && !reduced){
+    slots.addEventListener('click', (e) => {
+      const slot = e.target.closest('.slot');
+      if(!slot || !slot.classList.contains('on')) return;
+      slot.classList.remove('pop'); void slot.offsetWidth; slot.classList.add('pop');
+      slot.addEventListener('animationend', () => slot.classList.remove('pop'), {once:true});
+      if(meter && document.querySelectorAll('.slot.on').length === 4){
+        meter.classList.remove('maxed'); void meter.offsetWidth; meter.classList.add('maxed');
+        meter.addEventListener('animationend', () => meter.classList.remove('maxed'), {once:true});
+      }
+    });
+  }
 })();
 </script>
 
